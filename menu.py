@@ -38,10 +38,12 @@ class Menu:
         self.START_GAME_TEXT = self.MENU_OPTIONS_FONT.render("START  GAME", 1, self.WHITE)
         self.HOW_TO_PLAY_TEXT = self.MENU_OPTIONS_FONT.render("HOW TO PLAY", 1, self.WHITE)
         self.CREDITS_TEXT = self.MENU_OPTIONS_FONT.render("CREDITS", 1, self.WHITE)
+        self.PLAYER2_TEXT = self.MENU_OPTIONS_FONT.render("PLAYER 2: HUMAN", 1, self.WHITE)
 
         self.START_X, self.START_Y = self.WIDTH // 2 - self.START_GAME_TEXT.get_width() // 2, 210
         self.HOWTO_X, self.HOWTO_Y = self.WIDTH // 2 - self.HOW_TO_PLAY_TEXT.get_width() // 2, 270
         self.CREDITS_X, self.CREDITS_Y = self.WIDTH // 2 - self.CREDITS_TEXT.get_width() // 2, 330
+        self.PLAYER2_X, self.PLAYER2_Y = self.WIDTH // 2 - self.PLAYER2_TEXT.get_width() // 2, 390
         self.CURSOR_XY = (self.START_X - self.CURSOR_OFFSET, self.START_Y + 10)
 
     def draw_cursor(self):
@@ -55,6 +57,7 @@ class Menu:
         self.SURFACE.blit(self.START_GAME_TEXT, (self.START_X, self.START_Y))
         self.SURFACE.blit(self.HOW_TO_PLAY_TEXT, (self.HOWTO_X, self.HOWTO_Y))
         self.SURFACE.blit(self.CREDITS_TEXT, (self.CREDITS_X, self.CREDITS_Y))
+        self.SURFACE.blit(self.PLAYER2_TEXT, (self.PLAYER2_X, self.PLAYER2_Y))
 
     def move_cursor(self, event):
         if event.type == pygame.KEYDOWN:
@@ -69,13 +72,17 @@ class Menu:
                     self.CURSOR_STATE = "credits"
 
                 elif self.CURSOR_STATE == "credits":
+                    self.CURSOR_XY = (self.PLAYER2_X - self.CURSOR_OFFSET, self.PLAYER2_Y + 10)
+                    self.CURSOR_STATE = "player2"
+
+                elif self.CURSOR_STATE == "player2":
                     self.CURSOR_XY = (self.START_X - self.CURSOR_OFFSET, self.START_Y + 10)
                     self.CURSOR_STATE = "start"
 
             if event.key == pygame.K_UP:
                 if self.CURSOR_STATE == "start":
-                    self.CURSOR_XY = (self.CREDITS_X - self.CURSOR_OFFSET, self.CREDITS_Y + 10)
-                    self.CURSOR_STATE = "credits"
+                    self.CURSOR_XY = (self.PLAYER2_X - self.CURSOR_OFFSET, self.PLAYER2_Y + 10)
+                    self.CURSOR_STATE = "player2"
 
                 elif self.CURSOR_STATE == "howto":
                     self.CURSOR_XY = (self.START_X - self.CURSOR_OFFSET, self.START_Y + 10)
@@ -84,6 +91,10 @@ class Menu:
                 elif self.CURSOR_STATE == "credits":
                     self.CURSOR_XY = (self.HOWTO_X - self.CURSOR_OFFSET, self.HOWTO_Y + 10)
                     self.CURSOR_STATE = "howto"
+
+                elif self.CURSOR_STATE == "player2":
+                    self.CURSOR_XY = (self.CREDITS_X - self.CURSOR_OFFSET, self.CREDITS_Y + 10)
+                    self.CURSOR_STATE = "credits"
 
     def check_input(self, event):
         if event.type == pygame.KEYDOWN:
@@ -96,7 +107,17 @@ class Menu:
                     self.game.CURR_MENU = self.game.HOWTO
                 elif self.CURSOR_STATE == "credits":
                     self.game.CURR_MENU = self.game.CREDITS
+                elif self.CURSOR_STATE == "player2":
+                    self.toggle_player2()
                 self.RUNNING = False
+
+    def toggle_player2(self):
+        if self.game.PLAYER2_AI:
+            self.game.PLAYER2_AI = False
+            self.PLAYER2_TEXT = self.MENU_OPTIONS_FONT.render("PLAYER 2: HUMAN", 1, self.WHITE)
+        else:
+            self.game.PLAYER2_AI = True
+            self.PLAYER2_TEXT = self.MENU_OPTIONS_FONT.render("PLAYER 2: AI", 1, self.WHITE)
 
     def run_menu(self):
         self.RUNNING = True
@@ -287,4 +308,3 @@ class Credits:
             pygame.display.update()
 
         self.RUNNING = False
-
