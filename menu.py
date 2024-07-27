@@ -60,6 +60,11 @@ class Menu:
         self.SURFACE.blit(self.PLAYER2_TEXT, (self.PLAYER2_X, self.PLAYER2_Y))
 
     def move_cursor(self, event):
+        if event.type == pygame.QUIT:
+                    self.running = False
+                    pygame.quit()
+                    exit()
+                    
         if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_DOWN:

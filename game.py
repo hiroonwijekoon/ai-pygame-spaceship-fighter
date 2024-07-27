@@ -237,12 +237,14 @@ class Game:
             clock.tick(self.FPS)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.PLAYING = False
-                    self.CURR_MENU.RUNNING = False
+                    self.running = False
+                    pygame.quit()
+                    exit()
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         self.PLAYING = False
+                        self.CURR_MENU = self.MAIN_MENU
                         break
 
                     if event.key == pygame.K_SPACE:
