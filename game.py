@@ -211,6 +211,11 @@ class Game:
         self.SURFACE.blit(draw_text, (self.WIDTH // 2 - draw_text.get_width() // 2, self.HEIGHT // 2 - draw_text.get_height() // 2))
         pygame.display.update()
         pygame.time.delay(3000)
+    
+    def draw_paused(self, text):
+        draw_text = self.WINNER_FONT.render(text, 1, self.WHITE)
+        self.SURFACE.blit(draw_text, (self.WIDTH // 2 - draw_text.get_width() // 2, self.HEIGHT // 2 - draw_text.get_height() // 2))
+        pygame.display.update()
 
     def play(self):
         red_player = pygame.Rect(700, 250, self.SPACESHIP_WIDTH, self.SPACESHIP_HEIGHT)
@@ -226,6 +231,8 @@ class Game:
 
         winner_text = ''
         clock = pygame.time.Clock()
+        paused = False  # Attribute to track if the game is paused
+
         while self.PLAYING:
             clock.tick(self.FPS)
             for event in pygame.event.get():
@@ -238,27 +245,31 @@ class Game:
                         self.PLAYING = False
                         break
 
-                    if event.key == pygame.K_LSHIFT and len(yellow_bullets) < self.MAX_BULLETS:
-                        bullet = pygame.Rect(yellow_player.x + yellow_player.width,
-                                             yellow_player.y + yellow_player.height // 2 - 2, 10, 5)
-                        yellow_bullets.append(bullet)
-                        self.BULLET_FIRE_SOUND.play()
+                    if event.key == pygame.K_SPACE:
+                        paused = not paused  # Toggle the paused state
 
-                    if not self.PLAYER2_AI:
-                        if event.key == pygame.K_RSHIFT and len(self.red_bullets) < self.MAX_BULLETS:
-                            bullet = pygame.Rect(red_player.x, red_player.y + red_player.height // 2 - 2, 10, 5)
-                            self.red_bullets.append(bullet)
+                    if not paused:
+                        if event.key == pygame.K_LSHIFT and len(yellow_bullets) < self.MAX_BULLETS:
+                            bullet = pygame.Rect(yellow_player.x + yellow_player.width,
+                                                yellow_player.y + yellow_player.height // 2 - 2, 10, 5)
+                            yellow_bullets.append(bullet)
                             self.BULLET_FIRE_SOUND.play()
 
-                    if len(yellow_asteroids) < self.MAX_ASTEROIDS:
-                        random_x = random.randint(20, self.WIDTH // 2 - 50)
-                        asteroid = pygame.Rect(random_x, 50, self.ASTEROIDS[0].get_width() - 5, self.ASTEROIDS[0].get_height() - 5)
-                        yellow_asteroids.append(asteroid)
+                        if not self.PLAYER2_AI:
+                            if event.key == pygame.K_RSHIFT and len(self.red_bullets) < self.MAX_BULLETS:
+                                bullet = pygame.Rect(red_player.x, red_player.y + red_player.height // 2 - 2, 10, 5)
+                                self.red_bullets.append(bullet)
+                                self.BULLET_FIRE_SOUND.play()
 
-                    if len(red_asteroids) < self.MAX_ASTEROIDS:
-                        random_x = random.randint(self.BORDER.x + self.BORDER.width + 20, self.WIDTH - 20)
-                        asteroid = pygame.Rect(random_x, 50, self.ASTEROIDS[0].get_width() - 5, self.ASTEROIDS[0].get_height() - 5)
-                        red_asteroids.append(asteroid)
+                        if len(yellow_asteroids) < self.MAX_ASTEROIDS:
+                            random_x = random.randint(20, self.WIDTH // 2 - 50)
+                            asteroid = pygame.Rect(random_x, 50, self.ASTEROIDS[0].get_width() - 5, self.ASTEROIDS[0].get_height() - 5)
+                            yellow_asteroids.append(asteroid)
+
+                        if len(red_asteroids) < self.MAX_ASTEROIDS:
+                            random_x = random.randint(self.BORDER.x + self.BORDER.width + 20, self.WIDTH - 20)
+                            asteroid = pygame.Rect(random_x, 50, self.ASTEROIDS[0].get_width() - 5, self.ASTEROIDS[0].get_height() - 5)
+                            red_asteroids.append(asteroid)
 
                 if event.type == self.YELLOW_HIT:
                     yellow_health -= 1
@@ -267,6 +278,10 @@ class Game:
                 if event.type == self.RED_HIT:
                     red_health -= 1
                     self.BULLET_HIT_SOUND.play()
+
+            if paused:
+                self.draw_paused("PAUSED!")
+                continue
 
             keys_pressed = pygame.key.get_pressed()
             self.handle_yellow_movement(keys_pressed, yellow_player)
@@ -286,3 +301,4 @@ class Game:
                 self.play()
 
         self.PLAYING = False
+
