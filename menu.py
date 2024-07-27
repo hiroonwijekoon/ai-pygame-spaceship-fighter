@@ -39,11 +39,14 @@ class Menu:
         self.HOW_TO_PLAY_TEXT = self.MENU_OPTIONS_FONT.render("HOW TO PLAY", 1, self.WHITE)
         self.CREDITS_TEXT = self.MENU_OPTIONS_FONT.render("CREDITS", 1, self.WHITE)
         self.PLAYER2_TEXT = self.MENU_OPTIONS_FONT.render("PLAYER 2: AI", 1, self.WHITE)
+        self.DIFFICULTY_TEXT = self.MENU_OPTIONS_FONT.render("DIFFICULTY: BEGINNER", 1, self.WHITE)
+        self.DIFFICULTY_STATE = "beginner"  # Initial difficulty state
 
-        self.START_X, self.START_Y = self.WIDTH // 2 - self.START_GAME_TEXT.get_width() // 2, 210
-        self.HOWTO_X, self.HOWTO_Y = self.WIDTH // 2 - self.HOW_TO_PLAY_TEXT.get_width() // 2, 270
-        self.CREDITS_X, self.CREDITS_Y = self.WIDTH // 2 - self.CREDITS_TEXT.get_width() // 2, 330
-        self.PLAYER2_X, self.PLAYER2_Y = self.WIDTH // 2 - self.PLAYER2_TEXT.get_width() // 2, 390
+        self.START_X, self.START_Y = self.WIDTH // 2 - self.START_GAME_TEXT.get_width() // 2, 180
+        self.HOWTO_X, self.HOWTO_Y = self.WIDTH // 2 - self.HOW_TO_PLAY_TEXT.get_width() // 2, 240
+        self.CREDITS_X, self.CREDITS_Y = self.WIDTH // 2 - self.CREDITS_TEXT.get_width() // 2, 290
+        self.PLAYER2_X, self.PLAYER2_Y = self.WIDTH // 2 - self.PLAYER2_TEXT.get_width() // 2, 350
+        self.DIFFICULTY_X, self.DIFFICULTY_Y = self.WIDTH // 2 - self.DIFFICULTY_TEXT.get_width() // 2, 410
         self.CURSOR_XY = (self.START_X - self.CURSOR_OFFSET, self.START_Y + 10)
 
     def draw_cursor(self):
@@ -53,11 +56,12 @@ class Menu:
         self.SURFACE.blit(self.BACKGROUND, (0, 0))
 
         # Display Texts
-        self.SURFACE.blit(self.GAME_NAME_TEXT, (self.WIDTH // 2 - self.GAME_NAME_TEXT.get_width() // 2, 100))
+        self.SURFACE.blit(self.GAME_NAME_TEXT, (self.WIDTH // 2 - self.GAME_NAME_TEXT.get_width() // 2, 70))
         self.SURFACE.blit(self.START_GAME_TEXT, (self.START_X, self.START_Y))
         self.SURFACE.blit(self.HOW_TO_PLAY_TEXT, (self.HOWTO_X, self.HOWTO_Y))
         self.SURFACE.blit(self.CREDITS_TEXT, (self.CREDITS_X, self.CREDITS_Y))
         self.SURFACE.blit(self.PLAYER2_TEXT, (self.PLAYER2_X, self.PLAYER2_Y))
+        self.SURFACE.blit(self.DIFFICULTY_TEXT, (self.DIFFICULTY_X, self.DIFFICULTY_Y))
 
     def move_cursor(self, event):
         if event.type == pygame.QUIT:
@@ -66,7 +70,6 @@ class Menu:
                     exit()
                     
         if event.type == pygame.KEYDOWN:
-
             if event.key == pygame.K_DOWN:
                 if self.CURSOR_STATE == "start":
                     self.CURSOR_XY = (self.HOWTO_X - self.CURSOR_OFFSET, self.HOWTO_Y + 10)
@@ -81,13 +84,17 @@ class Menu:
                     self.CURSOR_STATE = "player2"
 
                 elif self.CURSOR_STATE == "player2":
+                    self.CURSOR_XY = (self.DIFFICULTY_X - self.CURSOR_OFFSET, self.DIFFICULTY_Y + 10)
+                    self.CURSOR_STATE = "difficulty"
+
+                elif self.CURSOR_STATE == "difficulty":
                     self.CURSOR_XY = (self.START_X - self.CURSOR_OFFSET, self.START_Y + 10)
                     self.CURSOR_STATE = "start"
 
             if event.key == pygame.K_UP:
                 if self.CURSOR_STATE == "start":
-                    self.CURSOR_XY = (self.PLAYER2_X - self.CURSOR_OFFSET, self.PLAYER2_Y + 10)
-                    self.CURSOR_STATE = "player2"
+                    self.CURSOR_XY = (self.DIFFICULTY_X - self.CURSOR_OFFSET, self.DIFFICULTY_Y + 10)
+                    self.CURSOR_STATE = "difficulty"
 
                 elif self.CURSOR_STATE == "howto":
                     self.CURSOR_XY = (self.START_X - self.CURSOR_OFFSET, self.START_Y + 10)
@@ -100,6 +107,10 @@ class Menu:
                 elif self.CURSOR_STATE == "player2":
                     self.CURSOR_XY = (self.CREDITS_X - self.CURSOR_OFFSET, self.CREDITS_Y + 10)
                     self.CURSOR_STATE = "credits"
+
+                elif self.CURSOR_STATE == "difficulty":
+                    self.CURSOR_XY = (self.PLAYER2_X - self.CURSOR_OFFSET, self.PLAYER2_Y + 10)
+                    self.CURSOR_STATE = "player2"
 
     def check_input(self, event):
         if event.type == pygame.KEYDOWN:
@@ -115,6 +126,8 @@ class Menu:
                     self.game.CURR_MENU = self.game.CREDITS
                 elif self.CURSOR_STATE == "player2":
                     self.toggle_player2()
+                elif self.CURSOR_STATE == "difficulty":
+                    self.toggle_difficulty()
                 self.RUNNING = False
 
     def toggle_player2(self):
@@ -124,6 +137,21 @@ class Menu:
         else:
             self.game.PLAYER2_AI = True
             self.PLAYER2_TEXT = self.MENU_OPTIONS_FONT.render("PLAYER 2: AI", 1, self.WHITE)
+    
+    def toggle_difficulty(self):
+        if self.DIFFICULTY_STATE == "beginner":
+            self.DIFFICULTY_STATE = "intermediate"
+            self.DIFFICULTY_TEXT = self.MENU_OPTIONS_FONT.render("DIFFICULTY: INTERMEDIATE", 1, self.WHITE)
+            self.game.AI_PLAYER_DIFFICULTY = 1  # Intermediate difficulty
+        elif self.DIFFICULTY_STATE == "intermediate":
+            self.DIFFICULTY_STATE = "advanced"
+            self.DIFFICULTY_TEXT = self.MENU_OPTIONS_FONT.render("DIFFICULTY: ADVANCED", 1, self.WHITE)
+            self.game.AI_PLAYER_DIFFICULTY = 2  # Advanced difficulty
+        elif self.DIFFICULTY_STATE == "advanced":
+            self.DIFFICULTY_STATE = "beginner"
+            self.DIFFICULTY_TEXT = self.MENU_OPTIONS_FONT.render("DIFFICULTY: BEGINNER", 1, self.WHITE)
+            self.game.AI_PLAYER_DIFFICULTY = 0  # Beginner difficulty
+
 
     def run_menu(self):
         self.RUNNING = True

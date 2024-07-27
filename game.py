@@ -221,20 +221,23 @@ class Game:
                         self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
             
             # AI Movement -> Advanced
-            elif self.AI_PLAYER_DIFFICULTY==2:
-                # Decide whether to follow player 1's Y-axis or move randomly
-                if random.random() < 0.7:  # 70% chance to follow player 1's Y-axis
-                    # Move towards player 1's Y-axis value
+            elif self.AI_PLAYER_DIFFICULTY == 2:
+                # Evade player 1's attacks
+                evade_distance = 100  # The distance at which AI starts to evade bullets
+                evade_speed = 2  # How quickly AI tries to move away from bullets
+                move_toward_player = random.random() < 0.7  # 70% chance to follow player 1's Y-axis
+
+                if move_toward_player:
                     if red_player.y < yellow_player.y:
                         if red_player.y + self.VELOCITY + red_player.height + 20 < self.HEIGHT:
                             red_player.y += self.VELOCITY
                     elif red_player.y > yellow_player.y:
                         if red_player.y - self.VELOCITY > 40:
                             red_player.y -= self.VELOCITY
-                else:  # 30% chance to move randomly
+                else:
                     if not hasattr(self, 'ai_direction'):
                         self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
-                    
+
                     if self.ai_direction == 'left':
                         if red_player.x - self.VELOCITY > self.BORDER.x + self.BORDER.width + 15:
                             red_player.x -= self.VELOCITY
@@ -262,6 +265,20 @@ class Game:
                     # Change direction periodically
                     if random.random() < 0.01:  # Probability for direction change
                         self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+
+                # Evade bullets
+                for bullet in self.yellow_bullets:
+                    if abs(bullet.x - red_player.x) < evade_distance and abs(bullet.y - red_player.y) < evade_distance:
+                        # Move away from bullet
+                        if bullet.x < red_player.x:
+                            red_player.x += evade_speed
+                        elif bullet.x > red_player.x:
+                            red_player.x -= evade_speed
+                        
+                        if bullet.y < red_player.y:
+                            red_player.y += evade_speed
+                        elif bullet.y > red_player.y:
+                            red_player.y -= evade_speed
 
     def player2_shoot(self, red_player):
         if self.PLAYER2_AI_SHOOT_TIMER == 0:
