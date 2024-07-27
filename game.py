@@ -217,7 +217,6 @@ class Game:
         yellow_player = pygame.Rect(100, 250, self.SPACESHIP_WIDTH, self.SPACESHIP_HEIGHT)
 
         yellow_bullets = []
-        red_bullets = []
 
         yellow_asteroids = []
         red_asteroids = []
@@ -246,9 +245,9 @@ class Game:
                         self.BULLET_FIRE_SOUND.play()
 
                     if not self.PLAYER2_AI:
-                        if event.key == pygame.K_RSHIFT and len(red_bullets) < self.MAX_BULLETS:
+                        if event.key == pygame.K_RSHIFT and len(self.red_bullets) < self.MAX_BULLETS:
                             bullet = pygame.Rect(red_player.x, red_player.y + red_player.height // 2 - 2, 10, 5)
-                            red_bullets.append(bullet)
+                            self.red_bullets.append(bullet)
                             self.BULLET_FIRE_SOUND.play()
 
                     if len(yellow_asteroids) < self.MAX_ASTEROIDS:
@@ -272,9 +271,9 @@ class Game:
             keys_pressed = pygame.key.get_pressed()
             self.handle_yellow_movement(keys_pressed, yellow_player)
             self.handle_red_movement(keys_pressed, red_player)
-            self.handle_bullets(yellow_bullets, red_bullets, yellow_player, red_player)
+            self.handle_bullets(yellow_bullets, self.red_bullets, yellow_player, red_player)
             self.handle_asteroids(yellow_asteroids, red_asteroids, yellow_player, red_player)
-            self.draw_surface(red_player, yellow_player, yellow_bullets, red_bullets, yellow_health, red_health, yellow_asteroids, red_asteroids)
+            self.draw_surface(red_player, yellow_player, yellow_bullets, self.red_bullets, yellow_health, red_health, yellow_asteroids, red_asteroids)
 
             if yellow_health <= 0:
                 winner_text = "PLAYER 2 WINS!"
