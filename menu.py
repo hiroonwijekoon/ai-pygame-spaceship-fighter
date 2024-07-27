@@ -38,7 +38,7 @@ class Menu:
         self.START_GAME_TEXT = self.MENU_OPTIONS_FONT.render("START  GAME", 1, self.WHITE)
         self.HOW_TO_PLAY_TEXT = self.MENU_OPTIONS_FONT.render("HOW TO PLAY", 1, self.WHITE)
         self.CREDITS_TEXT = self.MENU_OPTIONS_FONT.render("CREDITS", 1, self.WHITE)
-        self.PLAYER2_TEXT = self.MENU_OPTIONS_FONT.render("PLAYER 2: HUMAN", 1, self.WHITE)
+        self.PLAYER2_TEXT = self.MENU_OPTIONS_FONT.render("PLAYER 2: AI", 1, self.WHITE)
 
         self.START_X, self.START_Y = self.WIDTH // 2 - self.START_GAME_TEXT.get_width() // 2, 210
         self.HOWTO_X, self.HOWTO_Y = self.WIDTH // 2 - self.HOW_TO_PLAY_TEXT.get_width() // 2, 270
@@ -106,6 +106,7 @@ class Menu:
 
             if event.key == pygame.K_RETURN:
                 if self.CURSOR_STATE == "start":
+                    self.game.reset() 
                     self.game.APP_RUNNING = True
                     self.game.play()
                 elif self.CURSOR_STATE == "howto":

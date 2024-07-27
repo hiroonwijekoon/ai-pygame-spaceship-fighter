@@ -33,7 +33,7 @@ class Game:
         self.BULLET_VELOCITY = 10
         self.MAX_BULLETS = 10
         self.ASTEROID_VELOCITY = 1
-        self.MAX_ASTEROIDS = 1
+        self.MAX_ASTEROIDS = 0
 
         self.ASTEROIDS = []
 
@@ -65,12 +65,25 @@ class Game:
         self.BACKGROUND = pygame.transform.scale(pygame.image.load(os.path.join('Assets', 'space.png')),
                                                  (self.WIDTH, self.HEIGHT))
 
-        self.PLAYER2_AI = False
-        self.PLAYER2_AI_SHOOT_COOLDOWN = 30  # Cooldown time in frames
+        self.PLAYER2_AI = True
+        self.PLAYER2_AI_SHOOT_COOLDOWN = 10  # Cooldown time in frames
         self.PLAYER2_AI_SHOOT_TIMER = 0
+
+        self.AI_PLAYER_DIFFICULTY = 2
 
         self.red_bullets = []
 
+    def reset(self):
+        self.YELLOW_SCORE = 0
+        self.RED_SCORE = 0
+        self.yellow_health = 5
+        self.red_health = 5
+        self.yellow_bullets = []
+        self.red_bullets = []
+        self.yellow_asteroids = []
+        self.red_asteroids = []
+        self.yellow_player = pygame.Rect(100, 300, self.SPACESHIP_WIDTH, self.SPACESHIP_HEIGHT)
+        self.red_player = pygame.Rect(700, 300, self.SPACESHIP_WIDTH, self.SPACESHIP_HEIGHT)
 
     def draw_surface(self, red_player, yellow_player, yellow_bullets, red_bullets, yellow_health, red_health, yellow_asteroids, red_asteroids):
         self.SURFACE.blit(self.BACKGROUND, (0, 0))
@@ -120,7 +133,7 @@ class Game:
         if keys_pressed[pygame.K_s] and yellow_player.y + self.VELOCITY + yellow_player.height + 20 < self.HEIGHT:  # Move Down
             yellow_player.y += self.VELOCITY
 
-    def handle_red_movement(self, keys_pressed, red_player):
+    def handle_red_movement(self, keys_pressed, red_player, yellow_player):
         if not self.PLAYER2_AI:
             if keys_pressed[pygame.K_LEFT] and red_player.x - self.VELOCITY > self.BORDER.x + self.BORDER.width + 15:  # Move Left
                 red_player.x -= self.VELOCITY
@@ -131,46 +144,147 @@ class Game:
             if keys_pressed[pygame.K_DOWN] and red_player.y + self.VELOCITY + red_player.height + 20 < self.HEIGHT:  # Move Down
                 red_player.y += self.VELOCITY
         else:
-            # AI Movement
-            if not hasattr(self, 'ai_direction'):
-                self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
-            
-            if self.ai_direction == 'left':
-                if red_player.x - self.VELOCITY > self.BORDER.x + self.BORDER.width + 15:
-                    red_player.x -= self.VELOCITY
-                else:
+            # AI Movement -> Beginner
+            if self.AI_PLAYER_DIFFICULTY == 0:
+                if not hasattr(self, 'ai_direction'):
                     self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
-            
-            elif self.ai_direction == 'right':
-                if red_player.x + self.VELOCITY + red_player.width < self.WIDTH:
-                    red_player.x += self.VELOCITY
-                else:
-                    self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
-            
-            elif self.ai_direction == 'up':
-                if red_player.y - self.VELOCITY > 40:
-                    red_player.y -= self.VELOCITY
-                else:
-                    self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
-            
-            elif self.ai_direction == 'down':
-                if red_player.y + self.VELOCITY + red_player.height + 20 < self.HEIGHT:
-                    red_player.y += self.VELOCITY
-                else:
+                
+                if self.ai_direction == 'left':
+                    if red_player.x - self.VELOCITY > self.BORDER.x + self.BORDER.width + 15:
+                        red_player.x -= self.VELOCITY
+                    else:
+                        self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+                
+                elif self.ai_direction == 'right':
+                    if red_player.x + self.VELOCITY + red_player.width < self.WIDTH:
+                        red_player.x += self.VELOCITY
+                    else:
+                        self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+                
+                elif self.ai_direction == 'up':
+                    if red_player.y - self.VELOCITY > 40:
+                        red_player.y -= self.VELOCITY
+                    else:
+                        self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+                
+                elif self.ai_direction == 'down':
+                    if red_player.y + self.VELOCITY + red_player.height + 20 < self.HEIGHT:
+                        red_player.y += self.VELOCITY
+                    else:
+                        self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+
+                # Change direction periodically
+                if random.random() < 0.01:  # Probability for direction change
                     self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
 
-            # Optionally change direction periodically
-            if random.random() < 0.01:  # Adjust the probability for direction change
-                self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+            # AI Movement -> Intermediate
+            elif self.AI_PLAYER_DIFFICULTY == 1:
+                # Decide whether to follow player 1's Y-axis or move randomly
+                if random.random() < 0.3:  # 30% chance to follow player 1's Y-axis
+                    # Move towards player 1's Y-axis value
+                    if red_player.y < yellow_player.y:
+                        if red_player.y + self.VELOCITY + red_player.height + 20 < self.HEIGHT:
+                            red_player.y += self.VELOCITY
+                    elif red_player.y > yellow_player.y:
+                        if red_player.y - self.VELOCITY > 40:
+                            red_player.y -= self.VELOCITY
+                else:  # 70% chance to move randomly
+                    if not hasattr(self, 'ai_direction'):
+                        self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+                    
+                    if self.ai_direction == 'left':
+                        if red_player.x - self.VELOCITY > self.BORDER.x + self.BORDER.width + 15:
+                            red_player.x -= self.VELOCITY
+                        else:
+                            self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+                    
+                    elif self.ai_direction == 'right':
+                        if red_player.x + self.VELOCITY + red_player.width < self.WIDTH:
+                            red_player.x += self.VELOCITY
+                        else:
+                            self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+                    
+                    elif self.ai_direction == 'up':
+                        if red_player.y - self.VELOCITY > 40:
+                            red_player.y -= self.VELOCITY
+                        else:
+                            self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+                    
+                    elif self.ai_direction == 'down':
+                        if red_player.y + self.VELOCITY + red_player.height + 20 < self.HEIGHT:
+                            red_player.y += self.VELOCITY
+                        else:
+                            self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
 
-            # AI Shooting
-            self.PLAYER2_AI_SHOOT_TIMER += 1
-            if self.PLAYER2_AI_SHOOT_TIMER >= self.PLAYER2_AI_SHOOT_COOLDOWN:
-                bullet = pygame.Rect(red_player.x, red_player.y + red_player.height // 2 - 2, 10, 5)
-                self.red_bullets.append(bullet)
-                self.BULLET_FIRE_SOUND.play()
-                self.PLAYER2_AI_SHOOT_TIMER = 0
+                    # Change direction periodically
+                    if random.random() < 0.01:  # Probability for direction change
+                        self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+            
+            # AI Movement -> Advanced
+            elif self.AI_PLAYER_DIFFICULTY==2:
+                # Decide whether to follow player 1's Y-axis or move randomly
+                if random.random() < 0.7:  # 70% chance to follow player 1's Y-axis
+                    # Move towards player 1's Y-axis value
+                    if red_player.y < yellow_player.y:
+                        if red_player.y + self.VELOCITY + red_player.height + 20 < self.HEIGHT:
+                            red_player.y += self.VELOCITY
+                    elif red_player.y > yellow_player.y:
+                        if red_player.y - self.VELOCITY > 40:
+                            red_player.y -= self.VELOCITY
+                else:  # 30% chance to move randomly
+                    if not hasattr(self, 'ai_direction'):
+                        self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+                    
+                    if self.ai_direction == 'left':
+                        if red_player.x - self.VELOCITY > self.BORDER.x + self.BORDER.width + 15:
+                            red_player.x -= self.VELOCITY
+                        else:
+                            self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+                    
+                    elif self.ai_direction == 'right':
+                        if red_player.x + self.VELOCITY + red_player.width < self.WIDTH:
+                            red_player.x += self.VELOCITY
+                        else:
+                            self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+                    
+                    elif self.ai_direction == 'up':
+                        if red_player.y - self.VELOCITY > 40:
+                            red_player.y -= self.VELOCITY
+                        else:
+                            self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+                    
+                    elif self.ai_direction == 'down':
+                        if red_player.y + self.VELOCITY + red_player.height + 20 < self.HEIGHT:
+                            red_player.y += self.VELOCITY
+                        else:
+                            self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
 
+                    # Change direction periodically
+                    if random.random() < 0.01:  # Probability for direction change
+                        self.ai_direction = random.choice(['left', 'right', 'up', 'down'])
+
+    def player2_shoot(self, red_player):
+        if self.PLAYER2_AI_SHOOT_TIMER == 0:
+            if self.AI_PLAYER_DIFFICULTY == 0:
+                if random.random() < 0.05:  # Beginner AI has a low chance to shoot
+                    bullet = pygame.Rect(red_player.x, red_player.y + red_player.height // 2 - 2, 10, 5)
+                    self.red_bullets.append(bullet)
+                    self.BULLET_FIRE_SOUND.play()
+                    self.PLAYER2_AI_SHOOT_TIMER = self.PLAYER2_AI_SHOOT_COOLDOWN
+            elif self.AI_PLAYER_DIFFICULTY == 1:
+                if random.random() < 0.1:  # Intermediate AI has a higher chance to shoot
+                    bullet = pygame.Rect(red_player.x, red_player.y + red_player.height // 2 - 2, 10, 5)
+                    self.red_bullets.append(bullet)
+                    self.BULLET_FIRE_SOUND.play()
+                    self.PLAYER2_AI_SHOOT_TIMER = self.PLAYER2_AI_SHOOT_COOLDOWN
+            elif self.AI_PLAYER_DIFFICULTY == 2:
+                if random.random() < 0.5:  # Advanced AI has an even higher chance to shoot
+                    bullet = pygame.Rect(red_player.x, red_player.y + red_player.height // 2 - 2, 10, 5)
+                    self.red_bullets.append(bullet)
+                    self.BULLET_FIRE_SOUND.play()
+                    self.PLAYER2_AI_SHOOT_TIMER = self.PLAYER2_AI_SHOOT_COOLDOWN
+        else:
+            self.PLAYER2_AI_SHOOT_TIMER -= 1
 
     def handle_bullets(self, yellow_bullets, red_bullets, yellow_player, red_player):
         for bullet in yellow_bullets:
@@ -233,6 +347,11 @@ class Game:
         clock = pygame.time.Clock()
         paused = False  # Attribute to track if the game is paused
 
+        if self.PLAYER2_AI==True:
+            self.MAX_ASTEROIDS = 0
+        else:
+            self.MAX_ASTEROIDS = 1
+
         while self.PLAYING:
             clock.tick(self.FPS)
             for event in pygame.event.get():
@@ -243,6 +362,7 @@ class Game:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
+                        self.running = False
                         self.PLAYING = False
                         self.CURR_MENU = self.MAIN_MENU
                         break
@@ -287,7 +407,9 @@ class Game:
 
             keys_pressed = pygame.key.get_pressed()
             self.handle_yellow_movement(keys_pressed, yellow_player)
-            self.handle_red_movement(keys_pressed, red_player)
+            self.handle_red_movement(keys_pressed, red_player, yellow_player)
+            if self.PLAYER2_AI :
+                self.player2_shoot(red_player)
             self.handle_bullets(yellow_bullets, self.red_bullets, yellow_player, red_player)
             self.handle_asteroids(yellow_asteroids, red_asteroids, yellow_player, red_player)
             self.draw_surface(red_player, yellow_player, yellow_bullets, self.red_bullets, yellow_health, red_health, yellow_asteroids, red_asteroids)
